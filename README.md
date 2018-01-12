@@ -1,4 +1,4 @@
-# Memstore
+# Memstore ![Travis CI Build Status](https://api.travis-ci.org/mngharbi/memstore.svg?branch=master)
 
 Memstore is an in-memory, thread safe, multiple-key datastore for Go.
 
