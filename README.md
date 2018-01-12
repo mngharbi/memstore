@@ -4,7 +4,7 @@ Memstore is an in-memory, thread safe, multiple-key datastore for Go.
 
 ## Overview
 
-The datastore is built on top of multiple Left-Leaning Red-Black tree.
+The datastore is built on top of multiple Left-Leaning Red-Black trees.
 
 It allows you to store a collection of any arbitrary Go language structures, as long as you define a method to define comparison for arbitrary indexes.
 
