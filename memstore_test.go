@@ -421,7 +421,7 @@ func TestMaxInvalidIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	result := ms.Min("notID")
+	result := ms.Max("notID")
 
 	if result != nil {
 		t.Error("Getting range with unspecified index didn't fail")
