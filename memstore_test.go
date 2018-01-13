@@ -95,6 +95,24 @@ func TestAddMultipleIndex(t *testing.T) {
 	Delete
 */
 
+func TestDeleteInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = &TestStruct{id: 3}
+	result := ms.Delete(searchedRecord, "notID")
+
+	if result != nil {
+		t.Error("Deleting with unspecified index didn't fail")
+	}
+}
+
+
 // One index, Success
 func TestDeleteOneIndex(t *testing.T) {
 	data := testData()
@@ -175,6 +193,23 @@ func TestDeleteEmptyMultipleIndex(t *testing.T) {
 	Get
 */
 
+func TestGetInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = &TestStruct{id: 3}
+	result := ms.Get(searchedRecord, "notID")
+
+	if result != nil {
+		t.Error("Getting with unspecified index didn't fail")
+	}
+}
+
 // One index, Success
 func TestGetOneIndex(t *testing.T) {
 	data := testData()
@@ -254,6 +289,29 @@ func TestGetEmptyMultipleIndex(t *testing.T) {
 	GetRange
 */
 
+func TestGetRangeInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var from, to Item = &TestStruct{id: 2}, &TestStruct{id: 7}
+
+	var res []*TestStruct = make([]*TestStruct, 0)
+
+	ms.GetRange(from, to, "notID", func(item Item) bool {
+		res = append(res, item.(*TestStruct))
+		return true
+	})
+
+	if len(res) != 0 {
+		t.Error("Getting range with unspecified index didn't fail")
+	}
+}
+
 func TestRangeOneIndex(t *testing.T) {
 	data := testData()
 
@@ -265,7 +323,7 @@ func TestRangeOneIndex(t *testing.T) {
 
 	var from, to Item = &TestStruct{id: 2}, &TestStruct{id: 7}
 
-	var res []*TestStruct
+	var res []*TestStruct = make([]*TestStruct, 0)
 
 	ms.GetRange(from, to, "id", func(item Item) bool {
 		res = append(res, item.(*TestStruct))
@@ -354,6 +412,22 @@ func TestRangeEmptyMultipleIndex(t *testing.T) {
 	Max
 */
 
+func TestMaxInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	result := ms.Min("notID")
+
+	if result != nil {
+		t.Error("Getting range with unspecified index didn't fail")
+	}
+}
+
 func TestMaxOneIndex(t *testing.T) {
 	data := testData()
 
@@ -413,6 +487,22 @@ func TestMaxEmptyMultipleIndex(t *testing.T) {
 /*
 	Min
 */
+
+func TestMinInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	result := ms.Min("notID")
+
+	if result != nil {
+		t.Error("Getting range with unspecified index didn't fail")
+	}
+}
 
 func TestMinOneIndex(t *testing.T) {
 	data := testData()
