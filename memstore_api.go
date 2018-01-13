@@ -7,18 +7,18 @@ import (
 
 // Make internal item (to work with llrb) from external item
 func makeInternalItem(item Item) llrb.Item  {
-	return &InternalItem{
+	return &internalItem{
 		item: item,
 	}
 }
 
 // Delete item from a certain tree
-func (ms *Memstore) delete (x *InternalItem, tree *llrb.LLRB) *InternalItem {
+func (ms *Memstore) delete (x *internalItem, tree *llrb.LLRB) *internalItem {
 	deleted := tree.Delete(x)
 	if deleted == nil {
 		return nil
 	}
-	return deleted.(*InternalItem)
+	return deleted.(*internalItem)
 }
 
 /*
@@ -69,7 +69,7 @@ func (ms *Memstore) Delete (x Item, index string) Item {
 	var res Item = nil
 
 	// Delete from corresponding internal tree
-	initialDeleted := ms.delete(ix.(*InternalItem), initialTree)
+	initialDeleted := ms.delete(ix.(*internalItem), initialTree)
 	if initialDeleted == nil {
 		return nil
 	}
@@ -105,7 +105,7 @@ func (ms *Memstore) Get(x Item, index string) (res Item) {
 	if ifound == nil {
 		res = nil
 	} else {
-		res = ifound.(*InternalItem).item
+		res = ifound.(*internalItem).item
 	}
 
 	ms.m.RUnlock()
@@ -121,7 +121,7 @@ func (ms *Memstore) GetRange (from, to Item, index string, test (func(Item) bool
 
 	// Transform iterator
 	iterator := func(it llrb.Item) bool {
-		extit := it.(*InternalItem).item
+		extit := it.(*internalItem).item
 		return test(extit)
 	}
 
@@ -166,7 +166,7 @@ func (ms *Memstore) Max(index string) (res Item) {
 	if maxResult == nil {
 		res = nil
 	} else {
-		res = maxResult.(*InternalItem).item
+		res = maxResult.(*internalItem).item
 	}
 
 	ms.m.RUnlock()
@@ -188,7 +188,7 @@ func (ms *Memstore) Min(index string) (res Item) {
 	if minResult == nil {
 		res = nil
 	} else {
-		res = minResult.(*InternalItem).item
+		res = minResult.(*internalItem).item
 	}
 
 	ms.m.RUnlock()

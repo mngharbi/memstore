@@ -14,12 +14,12 @@ type Item interface {
     Less(index string, than interface{}) bool
 }
 
-type InternalItem struct {
+type internalItem struct {
 	item Item
 }
 
-func (ii *InternalItem) Less(index string, than llrb.Item) bool {
-	ithan := than.(*InternalItem)
+func (ii *internalItem) Less(index string, than llrb.Item) bool {
+	ithan := than.(*internalItem)
 	var anonItem interface{} = ithan.item
 	return ii.item.Less(index, anonItem)
 }
