@@ -12,89 +12,45 @@ type TestStruct struct {
 	name string
 }
 
-type VTestStruct struct {
-	id int
-	importance float32
-	name string
-}
-
 // Comparator for multiple keys for values
-func (ts *TestStruct) Less(index string, than interface{}) bool {
+func (ts TestStruct) Less(index string, than interface{}) bool {
 	switch(index) {
 		case "id":
-			return ts.id < than.(*TestStruct).id
+			return ts.id < than.(TestStruct).id
 		case "importance":
-			return ts.importance < than.(*TestStruct).importance
+			return ts.importance < than.(TestStruct).importance
 		default:
 			return true
 	}
 }
 
-// Comparator for multiple keys for values (with values)
-func (ts VTestStruct) Less(index string, than interface{}) bool {
-	switch(index) {
-		case "id":
-			return ts.id < than.(VTestStruct).id
-		case "importance":
-			return ts.importance < than.(VTestStruct).importance
-		default:
-			return true
+func testData() []TestStruct {
+	return []TestStruct{
+		TestStruct{1, 3, "x"},
+		TestStruct{2, 2, "y"},
+		TestStruct{3, 5, "z"},
+		TestStruct{4, 0, "t"},
+		TestStruct{8, 3.2, "u"},
+		TestStruct{9, 3.1, "v"},
 	}
 }
 
-func testData() []*TestStruct {
-	return []*TestStruct{
-		&TestStruct{1, 3, "x"},
-		&TestStruct{2, 2, "y"},
-		&TestStruct{3, 5, "z"},
-		&TestStruct{4, 0, "t"},
-		&TestStruct{8, 3.2, "u"},
-		&TestStruct{9, 3.1, "v"},
-	}
-}
-
-func testDataByValue() []VTestStruct {
-	return []VTestStruct{
-		VTestStruct{1, 3, "x"},
-		VTestStruct{2, 2, "y"},
-		VTestStruct{3, 5, "z"},
-		VTestStruct{4, 0, "t"},
-		VTestStruct{8, 3.2, "u"},
-		VTestStruct{9, 3.1, "v"},
-	}
-}
-
-func idSortedData() []*TestStruct {
+func idSortedData() []TestStruct {
 	return testData()
 }
 
-func idSortedDataByValue() []VTestStruct {
-	return testDataByValue()
-}
-
-func importanceSortedData() []*TestStruct {
-	return []*TestStruct{
-		&TestStruct{4, 0, "t"},
-		&TestStruct{2, 2, "y"},
-		&TestStruct{1, 3, "x"},
-		&TestStruct{9, 3.1, "v"},
-		&TestStruct{8, 3.2, "u"},
-		&TestStruct{3, 5, "z"},
+func importanceSortedData() []TestStruct {
+	return []TestStruct{
+		TestStruct{4, 0, "t"},
+		TestStruct{2, 2, "y"},
+		TestStruct{1, 3, "x"},
+		TestStruct{9, 3.1, "v"},
+		TestStruct{8, 3.2, "u"},
+		TestStruct{3, 5, "z"},
 	}
 }
 
-func importanceSortedDataByValue() []VTestStruct {
-	return []VTestStruct{
-		VTestStruct{4, 0, "t"},
-		VTestStruct{2, 2, "y"},
-		VTestStruct{1, 3, "x"},
-		VTestStruct{9, 3.1, "v"},
-		VTestStruct{8, 3.2, "u"},
-		VTestStruct{3, 5, "z"},
-	}
-}
-
-func shuffeledTestData() (data []*TestStruct) {
+func shuffeledTestData() (data []TestStruct) {
 	data = testData()
 
 	for i := range data {
@@ -104,18 +60,6 @@ func shuffeledTestData() (data []*TestStruct) {
 
 	return data
 }
-
-func shuffeledTestDataByValue() (data []VTestStruct) {
-	data = testDataByValue()
-
-	for i := range data {
-    	j := rand.Intn(i + 1)
-    	data[i], data[j] = data[j], data[i]
-	}
-
-	return data
-}
-
 
 /*
 	Adding
@@ -162,7 +106,7 @@ func TestDeleteInvalidIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 3}
+	var searchedRecord Item = TestStruct{id: 3}
 	result := ms.Delete(searchedRecord, "notID")
 
 	if result != nil {
@@ -181,8 +125,8 @@ func TestDeleteOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 3}
-	result := ms.Delete(searchedRecord, "id").(*TestStruct)
+	var searchedRecord Item = TestStruct{id: 3}
+	result := ms.Delete(searchedRecord, "id").(TestStruct)
 
 
 	if(ms.Len() != len(data)-1 ||
@@ -201,7 +145,7 @@ func TestDeleteEmptyOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 10}
+	var searchedRecord Item = TestStruct{id: 10}
 	result := ms.Delete(searchedRecord, "id")
 
 	if result != nil {
@@ -219,8 +163,8 @@ func TestDeleteMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{importance: 5}
-	result := ms.Delete(searchedRecord, "importance").(*TestStruct)
+	var searchedRecord Item = TestStruct{importance: 5}
+	result := ms.Delete(searchedRecord, "importance").(TestStruct)
 
 	if(ms.Len() != len(data)-1 ||
 		result.id != 3 || result.importance != 5) {
@@ -238,7 +182,7 @@ func TestDeleteEmptyMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{importance: 6}
+	var searchedRecord Item = TestStruct{importance: 6}
 	result := ms.Delete(searchedRecord, "importance")
 
 	if result != nil {
@@ -260,7 +204,7 @@ func TestGetInvalidIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 3}
+	var searchedRecord Item = TestStruct{id: 3}
 	result := ms.Get(searchedRecord, "notID")
 
 	if result != nil {
@@ -278,9 +222,9 @@ func TestGetOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 3}
+	var searchedRecord Item = TestStruct{id: 3}
 
-	result := ms.Get(searchedRecord, "id").(*TestStruct)
+	result := ms.Get(searchedRecord, "id").(TestStruct)
 
 	if result.id != 3 || result.importance != 5 {
 		t.Error("Get with one index failed")
@@ -297,7 +241,7 @@ func TestGetEmptyOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 10}
+	var searchedRecord Item = TestStruct{id: 10}
 
 	result := ms.Get(searchedRecord, "id")
 
@@ -316,8 +260,8 @@ func TestGetMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{importance: 5}
-	result := ms.Get(searchedRecord, "importance").(*TestStruct)
+	var searchedRecord Item = TestStruct{importance: 5}
+	result := ms.Get(searchedRecord, "importance").(TestStruct)
 
 	if result.id != 3 || result.importance != 5 {
 		t.Error("Get with multiple index failed")
@@ -334,7 +278,7 @@ func TestGetEmptyMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{importance: 6}
+	var searchedRecord Item = TestStruct{importance: 6}
 	result := ms.Get(searchedRecord, "importance")
 
 	if result != nil {
@@ -356,12 +300,12 @@ func TestGetRangeInvalidIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var from, to Item = &TestStruct{id: 2}, &TestStruct{id: 7}
+	var from, to Item = TestStruct{id: 2}, TestStruct{id: 7}
 
-	var res []*TestStruct = make([]*TestStruct, 0)
+	var res []TestStruct = make([]TestStruct, 0)
 
 	ms.GetRange(from, to, "notID", func(item Item) bool {
-		res = append(res, item.(*TestStruct))
+		res = append(res, item.(TestStruct))
 		return true
 	})
 
@@ -379,19 +323,19 @@ func TestRangeOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var from, to Item = &TestStruct{id: 2}, &TestStruct{id: 7}
+	var from, to Item = TestStruct{id: 2}, TestStruct{id: 7}
 
-	var res []*TestStruct = make([]*TestStruct, 0)
+	var res []TestStruct = make([]TestStruct, 0)
 
 	ms.GetRange(from, to, "id", func(item Item) bool {
-		res = append(res, item.(*TestStruct))
+		res = append(res, item.(TestStruct))
 		return true
 	})
 
 	expected := idSortedData()[1:4]
 
 	if !reflect.DeepEqual(res, expected) {
-		t.Errorf("Get range with one index failed, result = %v\n expected = %v\n", []TestStruct{*res[0], *res[1], *res[2]}, []TestStruct{*expected[0], *expected[1], *expected[2]})
+		t.Errorf("Get range with one index failed, result = %v\n expected = %v\n", res, expected)
 	}
 }
 
@@ -404,12 +348,12 @@ func TestRangeEmptyOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var from, to Item = &TestStruct{id: 8}, &TestStruct{id: 7}
+	var from, to Item = TestStruct{id: 8}, TestStruct{id: 7}
 
-	var res []*TestStruct = make([]*TestStruct, 0)
+	var res []TestStruct = make([]TestStruct, 0)
 
 	ms.GetRange(from, to, "id", func(item Item) bool {
-		res = append(res, item.(*TestStruct))
+		res = append(res, item.(TestStruct))
 		return true
 	})
 
@@ -427,12 +371,12 @@ func TestRangeMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var from, to Item = &TestStruct{importance: 2}, &TestStruct{importance: 3.2}
+	var from, to Item = TestStruct{importance: 2}, TestStruct{importance: 3.2}
 
-	var res []*TestStruct = make([]*TestStruct, 0)
+	var res []TestStruct = make([]TestStruct, 0)
 
 	ms.GetRange(from, to, "importance", func(item Item) bool {
-		res = append(res, item.(*TestStruct))
+		res = append(res, item.(TestStruct))
 		return true
 	})
 
@@ -452,12 +396,12 @@ func TestRangeEmptyMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var from, to Item = &TestStruct{importance: 6}, &TestStruct{importance: 7}
+	var from, to Item = TestStruct{importance: 6}, TestStruct{importance: 7}
 
-	var res []*TestStruct = make([]*TestStruct, 0)
+	var res []TestStruct = make([]TestStruct, 0)
 
 	ms.GetRange(from, to, "importance", func(item Item) bool {
-		res = append(res, item.(*TestStruct))
+		res = append(res, item.(TestStruct))
 		return true
 	})
 
@@ -495,7 +439,7 @@ func TestMaxOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	result := ms.Max("id").(*TestStruct)
+	result := ms.Max("id").(TestStruct)
 	sortedData := idSortedData()
 	expected := sortedData[len(sortedData)-1]
 
@@ -523,7 +467,7 @@ func TestMaxMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	result := ms.Max("importance").(*TestStruct)
+	result := ms.Max("importance").(TestStruct)
 	sortedData := importanceSortedData()
 	expected := sortedData[len(sortedData)-1]
 
@@ -571,7 +515,7 @@ func TestMinOneIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	result := ms.Min("id").(*TestStruct)
+	result := ms.Min("id").(TestStruct)
 	sortedData := idSortedData()
 	expected := sortedData[0]
 
@@ -599,7 +543,7 @@ func TestMinMultipleIndex(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	result := ms.Min("importance").(*TestStruct)
+	result := ms.Min("importance").(TestStruct)
 	sortedData := importanceSortedData()
 	expected := sortedData[0]
 
@@ -624,13 +568,13 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 */
 
 func dataModifierFunc(i interface{}) (interface{}, bool) {
-	itemPtrCopy := i.(*TestStruct)
+	itemCopy := i.(TestStruct)
 
-	if(itemPtrCopy.name == "x" || itemPtrCopy.name == "z") {
-		itemPtrCopy.name = "changed"
-		return itemPtrCopy, true
+	if(itemCopy.name == "x" || itemCopy.name == "z") {
+		itemCopy.name = "changed"
+		return itemCopy, true
 	} else {
-		return itemPtrCopy, false
+		return itemCopy, false
 	}
 }
 
@@ -643,7 +587,7 @@ func TestUpdateDataWithPointers(t *testing.T) {
 		ms.Add(vItem)
 	}
 
-	var searchedRecord Item = &TestStruct{id: 1}
+	var searchedRecord Item = TestStruct{id: 1}
 	result := ms.UpdateData(searchedRecord, "id", dataModifierFunc)
 
 	if result == nil {
@@ -651,18 +595,18 @@ func TestUpdateDataWithPointers(t *testing.T) {
 		return
 	}
 
-	if result.(*TestStruct).name != "changed" {
+	if result.(TestStruct).name != "changed" {
 		t.Error("First update not correct")
 	}
 
-	var searchedRecordByImportance Item = &TestStruct{importance: 3}
-	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(*TestStruct)
+	var searchedRecordByImportance Item = TestStruct{importance: 3}
+	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(TestStruct)
 
 	if resultByImportance.name != "changed" {
 		t.Error("Update did not propagate to other index trees")
 	}
 
-	var nonApplicableRecord Item = &TestStruct{id: 9}
+	var nonApplicableRecord Item = TestStruct{id: 9}
 	nonApplicableResult := ms.UpdateData(nonApplicableRecord, "id", dataModifierFunc)
 
 	if nonApplicableResult != nil {
@@ -670,84 +614,11 @@ func TestUpdateDataWithPointers(t *testing.T) {
 		return
 	}
 
-	var inexistentRecord Item = &TestStruct{id: 100}
+	var inexistentRecord Item = TestStruct{id: 100}
 	inexistentRecordResult := ms.UpdateData(inexistentRecord, "id", dataModifierFunc)
 
 	if inexistentRecordResult != nil {
 		t.Error("Update didn't fail but record is not in store")
-		return
-	}
-}
-
-func dataModifierFuncWithValues(i interface{}) (interface{}, bool) {
-	itemCopy := i.(VTestStruct)
-	if(itemCopy.name == "x" || itemCopy.name == "z") {
-		itemCopy.name = "changed"
-		return itemCopy, true
-	} else {
-		return itemCopy, false
-	}
-}
-
-func TestUpdateDataWithValues(t *testing.T) {
-	data := shuffeledTestDataByValue()
-
-	ms := New([]string{"id", "importance"})
-	for _,v := range data {
-		var vItem Item = v
-		ms.Add(vItem)
-	}
-
-	var searchedRecord Item = VTestStruct{id: 1}
-	result := ms.UpdateData(searchedRecord, "id", dataModifierFuncWithValues)
-
-	if result == nil {
-		t.Error("Update failed when it should succeed")
-		return
-	}
-
-	if result.(VTestStruct).name != "changed" {
-		t.Error("First update not correct")
-	}
-
-	var searchedRecordByImportance Item = VTestStruct{importance: 3}
-	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(VTestStruct)
-
-	if resultByImportance.name != "changed" {
-		t.Error("Update did not propagate to other index trees")
-	}
-
-	var nonApplicableRecord Item = VTestStruct{id: 9}
-	nonApplicableResult := ms.UpdateData(nonApplicableRecord, "id", dataModifierFuncWithValues)
-
-	if nonApplicableResult != nil {
-		t.Error("Update didn't fail but function doesn't update record")
-		return
-	}
-
-	var inexistentRecord Item = VTestStruct{id: 100}
-	inexistentRecordResult := ms.UpdateData(inexistentRecord, "id", dataModifierFuncWithValues)
-
-	if inexistentRecordResult != nil {
-		t.Error("Update didn't fail but record is not in store")
-		return
-	}
-}
-
-func TestUpdateDataInvalidIndex(t *testing.T) {
-	data := shuffeledTestData()
-
-	ms := New([]string{"id", "importance"})
-	for _,v := range data {
-		var vItem Item = v
-		ms.Add(vItem)
-	}
-
-	var searchedRecord Item = &TestStruct{id: 1}
-	result := ms.UpdateData(searchedRecord, "random", dataModifierFunc)
-
-	if result != nil {
-		t.Error("Update didn't fail with incorrect index")
 		return
 	}
 }
