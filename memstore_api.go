@@ -196,7 +196,7 @@ func (ms *Memstore) Min(index string) (res Item) {
 	return res
 }
 
-func (ms *Memstore) UpdateData(x Item, index string, modify (func(*interface{}) bool) ) (res interface{}) {
+func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (interface{}, bool)) ) (res interface{}) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
 
@@ -208,24 +208,27 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(*interface{}) 
 
 	ms.m.RLock()
 
-	internalFound := tree.Get(ix)
-	var itemFound *interface{}
-	if internalFound == nil {
-		itemFound = nil
+	internalFoundInterfaced := tree.Get(ix)
+	if internalFoundInterfaced == nil {
+		res = nil
 	} else {
-		itemFoundTemp := internalFound.(*internalItem).item.(interface{})
-		itemFound = &itemFoundTemp
-	}
+		// Calculate result with modify
+		var itemFoundCopy Item
+		var itemFoundCopyInterfaced interface{}
+		itemFoundCopy = internalFoundInterfaced.(*internalItem).item
+		itemFoundCopyInterfaced = itemFoundCopy
+		interfacedResult, modifyResult := modify(itemFoundCopyInterfaced)
 
-	if itemFound != nil {
-		modifyResult := modify(itemFound)
+		// If update is successful, update internal item
 		if modifyResult {
-			res = *itemFound
+			var itemResult Item = interfacedResult.(Item)
+			internalFound := internalFoundInterfaced.(*internalItem)
+			internalFound.item = itemResult
+
+			res = itemResult
 		} else {
 			res = nil
 		}
-	} else {
-		res = nil
 	}
 
 	ms.m.RUnlock()

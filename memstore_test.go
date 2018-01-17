@@ -623,14 +623,14 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 	Update Data
 */
 
-func dataModifierFunc(i *interface{}) bool {
-	var interfacedPointer interface{} = *i
-	directItem := interfacedPointer.(*TestStruct)
-	if(directItem.name == "x" || directItem.name == "z") {
-		directItem.name = "changed"
-		return true
+func dataModifierFunc(i interface{}) (interface{}, bool) {
+	itemPtrCopy := i.(*TestStruct)
+
+	if(itemPtrCopy.name == "x" || itemPtrCopy.name == "z") {
+		itemPtrCopy.name = "changed"
+		return itemPtrCopy, true
 	} else {
-		return false
+		return itemPtrCopy, false
 	}
 }
 
@@ -644,14 +644,14 @@ func TestUpdateDataWithPointers(t *testing.T) {
 	}
 
 	var searchedRecord Item = &TestStruct{id: 1}
-	result := ms.UpdateData(searchedRecord, "id", dataModifierFunc).(*TestStruct)
+	result := ms.UpdateData(searchedRecord, "id", dataModifierFunc)
 
 	if result == nil {
 		t.Error("Update failed when it should succeed")
 		return
 	}
 
-	if result.name != "changed" {
+	if result.(*TestStruct).name != "changed" {
 		t.Error("First update not correct")
 	}
 
@@ -679,17 +679,15 @@ func TestUpdateDataWithPointers(t *testing.T) {
 	}
 }
 
-func dataModifierFuncWithValues(i *interface{}) bool {
-	var interfacedPointer interface{} = *i
-	directItem := interfacedPointer.(VTestStruct)
-	if(directItem.name == "x" || directItem.name == "z") {
-		directItem.name = "changed"
-		return true
+func dataModifierFuncWithValues(i interface{}) (interface{}, bool) {
+	itemCopy := i.(VTestStruct)
+	if(itemCopy.name == "x" || itemCopy.name == "z") {
+		itemCopy.name = "changed"
+		return itemCopy, true
 	} else {
-		return false
+		return itemCopy, false
 	}
 }
-
 
 func TestUpdateDataWithValues(t *testing.T) {
 	data := shuffeledTestDataByValue()
