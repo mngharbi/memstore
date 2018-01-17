@@ -7,8 +7,9 @@ import (
 
 // Make internal item (to work with llrb) from external item
 func makeInternalItem(item Item) llrb.Item  {
+	itemCopy := item
 	return &internalItem{
-		item: item,
+		item: &itemCopy,
 	}
 }
 
@@ -66,7 +67,7 @@ func (ms *Memstore) Delete (x Item, index string) Item {
 
 	ms.m.Lock()
 
-	var res Item = nil
+	var res *Item = nil
 
 	// Delete from corresponding internal tree
 	initialDeleted := ms.delete(ix.(*internalItem), initialTree)
@@ -86,7 +87,7 @@ func (ms *Memstore) Delete (x Item, index string) Item {
 
 	ms.m.Unlock()
 
-	return res
+	return *res
 }
 
 func (ms *Memstore) Get(x Item, index string) (res Item) {
@@ -105,7 +106,7 @@ func (ms *Memstore) Get(x Item, index string) (res Item) {
 	if ifound == nil {
 		res = nil
 	} else {
-		res = ifound.(*internalItem).item
+		res = *(ifound.(*internalItem).item)
 	}
 
 	ms.m.RUnlock()
@@ -121,8 +122,8 @@ func (ms *Memstore) GetRange (from, to Item, index string, test (func(Item) bool
 
 	// Transform iterator
 	iterator := func(it llrb.Item) bool {
-		extit := it.(*internalItem).item
-		return test(extit)
+		extItPtr := it.(*internalItem).item
+		return test(*extItPtr)
 	}
 
 	// Get corresponding tree
@@ -166,7 +167,7 @@ func (ms *Memstore) Max(index string) (res Item) {
 	if maxResult == nil {
 		res = nil
 	} else {
-		res = maxResult.(*internalItem).item
+		res = *(maxResult.(*internalItem).item)
 	}
 
 	ms.m.RUnlock()
@@ -188,7 +189,7 @@ func (ms *Memstore) Min(index string) (res Item) {
 	if minResult == nil {
 		res = nil
 	} else {
-		res = minResult.(*internalItem).item
+		res = *(minResult.(*internalItem).item)
 	}
 
 	ms.m.RUnlock()
@@ -215,7 +216,7 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (
 		// Calculate result with modify
 		var itemFoundCopy Item
 		var itemFoundCopyInterfaced interface{}
-		itemFoundCopy = internalFoundInterfaced.(*internalItem).item
+		itemFoundCopy = *(internalFoundInterfaced.(*internalItem).item)
 		itemFoundCopyInterfaced = itemFoundCopy
 		interfacedResult, modifyResult := modify(itemFoundCopyInterfaced)
 
@@ -223,7 +224,7 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (
 		if modifyResult {
 			var itemResult Item = interfacedResult.(Item)
 			internalFound := internalFoundInterfaced.(*internalItem)
-			internalFound.item = itemResult
+			*(internalFound.item) = itemResult
 
 			res = itemResult
 		} else {

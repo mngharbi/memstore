@@ -15,13 +15,14 @@ type Item interface {
 }
 
 type internalItem struct {
-	item Item
+	item *Item
 }
 
 func (ii *internalItem) Less(index string, than llrb.Item) bool {
 	ithan := than.(*internalItem)
-	var anonItem interface{} = ithan.item
-	return ii.item.Less(index, anonItem)
+	var anonItem interface{} = *(ithan.item)
+	var item Item = *(ii.item)
+	return item.Less(index, anonItem)
 }
 
 /*
