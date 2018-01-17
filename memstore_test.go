@@ -12,13 +12,31 @@ type TestStruct struct {
 	name string
 }
 
-// Comparator for multiple keys
+type VTestStruct struct {
+	id int
+	importance float32
+	name string
+}
+
+// Comparator for multiple keys for values
 func (ts *TestStruct) Less(index string, than interface{}) bool {
 	switch(index) {
 		case "id":
 			return ts.id < than.(*TestStruct).id
 		case "importance":
 			return ts.importance < than.(*TestStruct).importance
+		default:
+			return true
+	}
+}
+
+// Comparator for multiple keys for values (with values)
+func (ts VTestStruct) Less(index string, than interface{}) bool {
+	switch(index) {
+		case "id":
+			return ts.id < than.(VTestStruct).id
+		case "importance":
+			return ts.importance < than.(VTestStruct).importance
 		default:
 			return true
 	}
@@ -35,8 +53,23 @@ func testData() []*TestStruct {
 	}
 }
 
+func testDataByValue() []VTestStruct {
+	return []VTestStruct{
+		VTestStruct{1, 3, "x"},
+		VTestStruct{2, 2, "y"},
+		VTestStruct{3, 5, "z"},
+		VTestStruct{4, 0, "t"},
+		VTestStruct{8, 3.2, "u"},
+		VTestStruct{9, 3.1, "v"},
+	}
+}
+
 func idSortedData() []*TestStruct {
 	return testData()
+}
+
+func idSortedDataByValue() []VTestStruct {
+	return testDataByValue()
 }
 
 func importanceSortedData() []*TestStruct {
@@ -50,8 +83,30 @@ func importanceSortedData() []*TestStruct {
 	}
 }
 
+func importanceSortedDataByValue() []VTestStruct {
+	return []VTestStruct{
+		VTestStruct{4, 0, "t"},
+		VTestStruct{2, 2, "y"},
+		VTestStruct{1, 3, "x"},
+		VTestStruct{9, 3.1, "v"},
+		VTestStruct{8, 3.2, "u"},
+		VTestStruct{3, 5, "z"},
+	}
+}
+
 func shuffeledTestData() (data []*TestStruct) {
 	data = testData()
+
+	for i := range data {
+    	j := rand.Intn(i + 1)
+    	data[i], data[j] = data[j], data[i]
+	}
+
+	return data
+}
+
+func shuffeledTestDataByValue() (data []VTestStruct) {
+	data = testDataByValue()
 
 	for i := range data {
     	j := rand.Intn(i + 1)
@@ -579,7 +634,7 @@ func dataModifierFunc(i *interface{}) bool {
 	}
 }
 
-func TestUpdateData(t *testing.T) {
+func TestUpdateDataWithPointers(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
@@ -600,6 +655,13 @@ func TestUpdateData(t *testing.T) {
 		t.Error("First update not correct")
 	}
 
+	var searchedRecordByImportance Item = &TestStruct{importance: 3}
+	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(*TestStruct)
+
+	if resultByImportance.name != "changed" {
+		t.Error("Update did not propagate to other index trees")
+	}
+
 	var nonApplicableRecord Item = &TestStruct{id: 9}
 	nonApplicableResult := ms.UpdateData(nonApplicableRecord, "id", dataModifierFunc)
 
@@ -610,6 +672,63 @@ func TestUpdateData(t *testing.T) {
 
 	var inexistentRecord Item = &TestStruct{id: 100}
 	inexistentRecordResult := ms.UpdateData(inexistentRecord, "id", dataModifierFunc)
+
+	if inexistentRecordResult != nil {
+		t.Error("Update didn't fail but record is not in store")
+		return
+	}
+}
+
+func dataModifierFuncWithValues(i *interface{}) bool {
+	var interfacedPointer interface{} = *i
+	directItem := interfacedPointer.(VTestStruct)
+	if(directItem.name == "x" || directItem.name == "z") {
+		directItem.name = "changed"
+		return true
+	} else {
+		return false
+	}
+}
+
+
+func TestUpdateDataWithValues(t *testing.T) {
+	data := shuffeledTestDataByValue()
+
+	ms := New([]string{"id", "importance"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = VTestStruct{id: 1}
+	result := ms.UpdateData(searchedRecord, "id", dataModifierFuncWithValues)
+
+	if result == nil {
+		t.Error("Update failed when it should succeed")
+		return
+	}
+
+	if result.(VTestStruct).name != "changed" {
+		t.Error("First update not correct")
+	}
+
+	var searchedRecordByImportance Item = VTestStruct{importance: 3}
+	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(VTestStruct)
+
+	if resultByImportance.name != "changed" {
+		t.Error("Update did not propagate to other index trees")
+	}
+
+	var nonApplicableRecord Item = VTestStruct{id: 9}
+	nonApplicableResult := ms.UpdateData(nonApplicableRecord, "id", dataModifierFuncWithValues)
+
+	if nonApplicableResult != nil {
+		t.Error("Update didn't fail but function doesn't update record")
+		return
+	}
+
+	var inexistentRecord Item = VTestStruct{id: 100}
+	inexistentRecordResult := ms.UpdateData(inexistentRecord, "id", dataModifierFuncWithValues)
 
 	if inexistentRecordResult != nil {
 		t.Error("Update didn't fail but record is not in store")
