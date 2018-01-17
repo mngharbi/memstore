@@ -195,3 +195,40 @@ func (ms *Memstore) Min(index string) (res Item) {
 
 	return res
 }
+
+func (ms *Memstore) UpdateData(x Item, index string, modify (func(*interface{}) bool) ) (res interface{}) {
+	// Make internal node to use with llrb
+	ix := makeInternalItem(x)
+
+	// Get corresponding tree
+	tree := ms.indexTree[index]
+	if tree == nil {
+		return nil
+	}
+
+	ms.m.RLock()
+
+	internalFound := tree.Get(ix)
+	var itemFound *interface{}
+	if internalFound == nil {
+		itemFound = nil
+	} else {
+		itemFoundTemp := internalFound.(*internalItem).item.(interface{})
+		itemFound = &itemFoundTemp
+	}
+
+	if itemFound != nil {
+		modifyResult := modify(itemFound)
+		if modifyResult {
+			res = *itemFound
+		} else {
+			res = nil
+		}
+	} else {
+		res = nil
+	}
+
+	ms.m.RUnlock()
+
+	return res
+}

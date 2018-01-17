@@ -9,6 +9,7 @@ import (
 type TestStruct struct {
 	id int
 	importance float32
+	name string
 }
 
 // Comparator for multiple keys
@@ -25,12 +26,12 @@ func (ts *TestStruct) Less(index string, than interface{}) bool {
 
 func testData() []*TestStruct {
 	return []*TestStruct{
-		&TestStruct{1, 3},
-		&TestStruct{2, 2},
-		&TestStruct{3, 5},
-		&TestStruct{4, 0},
-		&TestStruct{8, 3.2},
-		&TestStruct{9, 3.1},
+		&TestStruct{1, 3, "x"},
+		&TestStruct{2, 2, "y"},
+		&TestStruct{3, 5, "z"},
+		&TestStruct{4, 0, "t"},
+		&TestStruct{8, 3.2, "u"},
+		&TestStruct{9, 3.1, "v"},
 	}
 }
 
@@ -40,12 +41,12 @@ func idSortedData() []*TestStruct {
 
 func importanceSortedData() []*TestStruct {
 	return []*TestStruct{
-		&TestStruct{4, 0},
-		&TestStruct{2, 2},
-		&TestStruct{1, 3},
-		&TestStruct{9, 3.1},
-		&TestStruct{8, 3.2},
-		&TestStruct{3, 5},
+		&TestStruct{4, 0, "t"},
+		&TestStruct{2, 2, "y"},
+		&TestStruct{1, 3, "x"},
+		&TestStruct{9, 3.1, "v"},
+		&TestStruct{8, 3.2, "u"},
+		&TestStruct{3, 5, "z"},
 	}
 }
 
@@ -560,3 +561,74 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 	}
 }
 
+
+/*
+	Update Data
+*/
+
+func dataModifierFunc(i *interface{}) bool {
+	var interfacedPointer interface{} = *i
+	directItem := interfacedPointer.(*TestStruct)
+	if(directItem.name == "x" || directItem.name == "z") {
+		directItem.name = "changed"
+		return true
+	} else {
+		return false
+	}
+}
+
+func TestUpdateData(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id", "importance"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = &TestStruct{id: 1}
+	result := ms.UpdateData(searchedRecord, "id", dataModifierFunc).(*TestStruct)
+
+	if result == nil {
+		t.Error("Update failed when it should succeed")
+		return
+	}
+
+	if result.name != "changed" {
+		t.Error("First update not correct")
+	}
+
+	var nonApplicableRecord Item = &TestStruct{id: 9}
+	nonApplicableResult := ms.UpdateData(nonApplicableRecord, "id", dataModifierFunc)
+
+	if nonApplicableResult != nil {
+		t.Error("Update didn't fail but function doesn't update record")
+		return
+	}
+
+	var inexistentRecord Item = &TestStruct{id: 100}
+	inexistentRecordResult := ms.UpdateData(inexistentRecord, "id", dataModifierFunc)
+
+	if inexistentRecordResult != nil {
+		t.Error("Update didn't fail but record is not in store")
+		return
+	}
+}
+
+func TestUpdateDataInvalidIndex(t *testing.T) {
+	data := testData()
+
+	ms := New([]string{"id", "importance"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = &TestStruct{id: 1}
+	result := ms.UpdateData(searchedRecord, "random", dataModifierFunc)
+
+	if result != nil {
+		t.Error("Update didn't fail with incorrect index")
+		return
+	}
+}
