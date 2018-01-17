@@ -50,7 +50,9 @@ func importanceSortedData() []*TestStruct {
 	}
 }
 
-func shuffeledTestData(data []*TestStruct) []*TestStruct {
+func shuffeledTestData() (data []*TestStruct) {
+	data = testData()
+
 	for i := range data {
     	j := rand.Intn(i + 1)
     	data[i], data[j] = data[j], data[i]
@@ -65,7 +67,7 @@ func shuffeledTestData(data []*TestStruct) []*TestStruct {
 */
 
 func TestAddOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -79,7 +81,7 @@ func TestAddOneIndex(t *testing.T) {
 }
 
 func TestAddMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"importance", "id"})
 	for _,v := range data {
@@ -97,7 +99,7 @@ func TestAddMultipleIndex(t *testing.T) {
 */
 
 func TestDeleteInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -116,7 +118,7 @@ func TestDeleteInvalidIndex(t *testing.T) {
 
 // One index, Success
 func TestDeleteOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -136,7 +138,7 @@ func TestDeleteOneIndex(t *testing.T) {
 
 // One index, Empty
 func TestDeleteEmptyOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -154,7 +156,7 @@ func TestDeleteEmptyOneIndex(t *testing.T) {
 
 // Multiple index, Success
 func TestDeleteMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -173,7 +175,7 @@ func TestDeleteMultipleIndex(t *testing.T) {
 
 // Multiple index, Empty
 func TestDeleteEmptyMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -195,7 +197,7 @@ func TestDeleteEmptyMultipleIndex(t *testing.T) {
 */
 
 func TestGetInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -213,7 +215,7 @@ func TestGetInvalidIndex(t *testing.T) {
 
 // One index, Success
 func TestGetOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -232,7 +234,7 @@ func TestGetOneIndex(t *testing.T) {
 
 // One index, Empty
 func TestGetEmptyOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -251,7 +253,7 @@ func TestGetEmptyOneIndex(t *testing.T) {
 
 // Multiple index, Success
 func TestGetMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -269,7 +271,7 @@ func TestGetMultipleIndex(t *testing.T) {
 
 // Multiple index, Empty
 func TestGetEmptyMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -291,7 +293,7 @@ func TestGetEmptyMultipleIndex(t *testing.T) {
 */
 
 func TestGetRangeInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -314,7 +316,7 @@ func TestGetRangeInvalidIndex(t *testing.T) {
 }
 
 func TestRangeOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -334,12 +336,12 @@ func TestRangeOneIndex(t *testing.T) {
 	expected := idSortedData()[1:4]
 
 	if !reflect.DeepEqual(res, expected) {
-		t.Error("Get range with one index failed")
+		t.Errorf("Get range with one index failed, result = %v\n expected = %v\n", []TestStruct{*res[0], *res[1], *res[2]}, []TestStruct{*expected[0], *expected[1], *expected[2]})
 	}
 }
 
 func TestRangeEmptyOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -362,7 +364,7 @@ func TestRangeEmptyOneIndex(t *testing.T) {
 }
 
 func TestRangeMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -387,7 +389,7 @@ func TestRangeMultipleIndex(t *testing.T) {
 }
 
 func TestRangeEmptyMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -414,7 +416,7 @@ func TestRangeEmptyMultipleIndex(t *testing.T) {
 */
 
 func TestMaxInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -430,7 +432,7 @@ func TestMaxInvalidIndex(t *testing.T) {
 }
 
 func TestMaxOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -458,7 +460,7 @@ func TestMaxEmptyOneIndex(t *testing.T) {
 }
 
 func TestMaxMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -490,7 +492,7 @@ func TestMaxEmptyMultipleIndex(t *testing.T) {
 */
 
 func TestMinInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -506,7 +508,7 @@ func TestMinInvalidIndex(t *testing.T) {
 }
 
 func TestMinOneIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
 	for _,v := range data {
@@ -534,7 +536,7 @@ func TestMinEmptyOneIndex(t *testing.T) {
 }
 
 func TestMinMultipleIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -578,7 +580,7 @@ func dataModifierFunc(i *interface{}) bool {
 }
 
 func TestUpdateData(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
@@ -616,7 +618,7 @@ func TestUpdateData(t *testing.T) {
 }
 
 func TestUpdateDataInvalidIndex(t *testing.T) {
-	data := testData()
+	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
 	for _,v := range data {
