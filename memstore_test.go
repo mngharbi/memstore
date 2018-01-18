@@ -622,3 +622,82 @@ func TestUpdateDataWithPointers(t *testing.T) {
 		return
 	}
 }
+
+
+/*
+	Update Data that can include index change
+*/
+
+func dataModifierFuncWithIndex(i Item) (Item, bool) {
+	itemCopy := i.(TestStruct)
+
+	if itemCopy.name == "x" || itemCopy.name == "z" {
+		itemCopy.name = "changed"
+		return itemCopy, true
+	} else if itemCopy.name == "v" {
+		itemCopy.id = -1
+		return itemCopy, true
+	} else {
+		return itemCopy, false
+	}
+}
+
+func TestUpdateWithIndexes(t *testing.T) {
+	data := shuffeledTestData()
+
+	ms := New([]string{"id", "importance"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = TestStruct{id: 1}
+	result := ms.UpdateWithIndexes(searchedRecord, "id", dataModifierFuncWithIndex)
+
+	if result == nil {
+		t.Error("Update failed when it should succeed")
+		return
+	}
+
+	if result.(TestStruct).name != "changed" {
+		t.Error("First update not correct")
+	}
+
+	var searchedRecordByImportance Item = TestStruct{importance: 3}
+	resultByImportance := ms.Get(searchedRecordByImportance, "importance").(TestStruct)
+
+	if resultByImportance.name != "changed" {
+		t.Error("Update did not propagate to other index trees")
+	}
+
+	var nonApplicableRecord Item = TestStruct{id: 8}
+	nonApplicableResult := ms.UpdateWithIndexes(nonApplicableRecord, "id", dataModifierFuncWithIndex)
+
+	if nonApplicableResult != nil {
+		t.Error("Update didn't fail but function doesn't update record")
+		return
+	}
+
+	var inexistentRecord Item = TestStruct{id: 100}
+	inexistentRecordResult := ms.UpdateWithIndexes(inexistentRecord, "id", dataModifierFuncWithIndex)
+
+	if inexistentRecordResult != nil {
+		t.Error("Update didn't fail but record is not in store")
+		return
+	}
+
+	var affectingIndex Item = TestStruct{id: 9}
+	affectingIndexResult := ms.UpdateWithIndexes(affectingIndex, "id", dataModifierFuncWithIndex)
+
+	if affectingIndexResult == nil || affectingIndexResult.(TestStruct).id != -1 {
+		t.Error("Update affecting index didn't fail but function doesn't update record")
+		return
+	}
+
+	resultMin := ms.Min("id")
+
+	if resultMin == nil || resultMin.(TestStruct).id != -1 {
+		t.Error("Update affecting index should readjust tables", resultMin.(TestStruct).id)
+		return
+	}
+}

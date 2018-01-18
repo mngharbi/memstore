@@ -236,3 +236,51 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (
 
 	return res
 }
+
+func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (Item, bool)) ) (res interface{}) {
+	// Make internal node to use with llrb
+	ix := makeInternalItem(x)
+
+	// Get corresponding tree
+	tree := ms.indexTree[index]
+	if tree == nil {
+		return nil
+	}
+
+	var ok bool
+	var itemCopy, itemResult Item
+
+	ms.m.Lock()
+
+	internalFoundInterfaced := tree.Get(ix)
+	if internalFoundInterfaced == nil {
+		ok = false
+	} else {
+		// Modify copy using user-provided function
+		var internalFound *internalItem = internalFoundInterfaced.(*internalItem)
+		itemCopy = *(internalFound.item)
+		itemResult, ok = modify(itemCopy)
+
+		// If found and update would be successful, delete using copy item then add modified one to all tables
+		if ok {
+			// Delete from all trees
+			for _, tree := range ms.indexTree {
+				tree.Delete(internalFound)
+			}
+
+			// Add to every internal tree
+			ix := makeInternalItem(itemResult)
+			for _, tree := range ms.indexTree {
+				tree.ReplaceOrInsert(ix)
+			}
+		}
+	}
+
+	ms.m.Unlock()
+
+	if ok {
+		return itemResult
+	} else {
+		return nil
+	}
+}
