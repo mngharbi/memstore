@@ -197,7 +197,7 @@ func (ms *Memstore) Min(index string) (res Item) {
 	return res
 }
 
-func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (interface{}, bool)) ) (res interface{}) {
+func (ms *Memstore) UpdateData(x Item, index string, modify (func(Item) (Item, bool)) ) (res Item) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
 
@@ -215,17 +215,13 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(interface{}) (
 	} else {
 		// Calculate result with modify
 		var itemFoundCopy Item
-		var itemFoundCopyInterfaced interface{}
-		itemFoundCopy = *(internalFoundInterfaced.(*internalItem).item)
-		itemFoundCopyInterfaced = itemFoundCopy
-		interfacedResult, modifyResult := modify(itemFoundCopyInterfaced)
+		internalFound := internalFoundInterfaced.(*internalItem)
+		itemFoundCopy = *(internalFound.item)
+		itemResult, modifyResult := modify(itemFoundCopy)
 
 		// If update is successful, update internal item
 		if modifyResult {
-			var itemResult Item = interfacedResult.(Item)
-			internalFound := internalFoundInterfaced.(*internalItem)
 			*(internalFound.item) = itemResult
-
 			res = itemResult
 		} else {
 			res = nil

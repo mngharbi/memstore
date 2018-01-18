@@ -567,7 +567,7 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 	Update Data
 */
 
-func dataModifierFunc(i interface{}) (interface{}, bool) {
+func dataModifierFunc(i Item) (Item, bool) {
 	itemCopy := i.(TestStruct)
 
 	if(itemCopy.name == "x" || itemCopy.name == "z") {
