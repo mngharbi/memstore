@@ -233,7 +233,7 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(Item) (Item, b
 	return res
 }
 
-func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (Item, bool)) ) (res interface{}) {
+func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (Item, bool)) ) (res Item) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
 
