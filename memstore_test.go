@@ -578,7 +578,7 @@ func dataModifierFunc(i Item) (Item, bool) {
 	}
 }
 
-func TestUpdateDataWithPointers(t *testing.T) {
+func TestUpdateData(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
@@ -698,6 +698,70 @@ func TestUpdateWithIndexes(t *testing.T) {
 
 	if resultMin == nil || resultMin.(TestStruct).id != -1 {
 		t.Error("Update affecting index should readjust tables", resultMin.(TestStruct).id)
+		return
+	}
+}
+
+/*
+	Update subset of data (does not include indexes)
+*/
+
+func dataSubsetModifierFunc(i Item) (Item, bool) {
+	itemCopy := i.(TestStruct)
+
+	if(itemCopy.name == "x" || itemCopy.name == "y" || itemCopy.name == "z") {
+		itemCopy.name = "changed"
+		return itemCopy, true
+	} else {
+		return itemCopy, false
+	}
+}
+
+func TestUpdateDataSubset(t *testing.T) {
+	data := shuffeledTestData()
+
+	ms := New([]string{"id", "importance"})
+	for _,v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	searchedRecords := []Item{TestStruct{id: 1}, TestStruct{id: 2}}
+	result := ms.UpdateDataSubset(searchedRecords, "id", dataSubsetModifierFunc)
+
+	if result == nil {
+		t.Error("Update subset failed when it should succeed")
+		return
+	}
+
+	if len(result) != 2 ||
+		result[0].(TestStruct).name != "changed" ||
+		result[1].(TestStruct).name != "changed" {
+		t.Error("First update subset not correct")
+	}
+
+	searchedRecordsByImportance := []Item{TestStruct{importance: 3}, TestStruct{importance: 2}}
+	resultByImportanceFirst := ms.Get(searchedRecordsByImportance[0], "importance")
+	resultByImportanceSecond := ms.Get(searchedRecordsByImportance[1], "importance")
+
+	if resultByImportanceFirst.(TestStruct).name != "changed" ||
+		resultByImportanceSecond.(TestStruct).name != "changed" {
+		t.Error("Update subset did not propagate to other index trees")
+	}
+
+	nonApplicableRecord := []Item{TestStruct{id: 9}}
+	nonApplicableResult := ms.UpdateDataSubset(nonApplicableRecord, "id", dataSubsetModifierFunc)
+
+	if !reflect.DeepEqual(nonApplicableResult, []Item{nil}){
+		t.Error("Update subset didn't fail but function doesn't update record")
+		return
+	}
+
+	inexistentRecord := []Item{TestStruct{id: 100}}
+	inexistentRecordResult := ms.UpdateDataSubset(inexistentRecord, "id", dataSubsetModifierFunc)
+
+	if !reflect.DeepEqual(inexistentRecordResult, []Item{nil}) {
+		t.Errorf("Update subset didn't fail but record is not in store")
 		return
 	}
 }

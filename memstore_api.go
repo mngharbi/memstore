@@ -280,3 +280,45 @@ func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (
 		return nil
 	}
 }
+
+
+func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify (func(Item) (Item, bool)) ) (res []Item) {
+	// Make internal nodes to use with llrb
+	internalItems := []llrb.Item{}
+	for _,it := range items {
+		internalItems = append(internalItems, makeInternalItem(it))
+	}
+
+	// Get corresponding tree
+	tree := ms.indexTree[index]
+	if tree == nil {
+		return nil
+	}
+
+	ms.m.RLock()
+
+	for _,iitem := range internalItems {
+		internalFoundInterfaced := tree.Get(iitem)
+		if internalFoundInterfaced == nil {
+			res = append(res, nil)
+		} else {
+			// Calculate result with modify
+			var itemFoundCopy Item
+			internalFound := internalFoundInterfaced.(*internalItem)
+			itemFoundCopy = *(internalFound.item)
+			itemResult, modifyResult := modify(itemFoundCopy)
+
+			// If update is successful, update internal item
+			if modifyResult {
+				*(internalFound.item) = itemResult
+				res = append(res, itemResult)
+			} else {
+				res = append(res, nil)
+			}
+		}
+	}
+
+	ms.m.RUnlock()
+
+	return res
+}
