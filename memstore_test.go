@@ -1,26 +1,28 @@
 package memstore
 
 import (
-	"testing"
 	"math/rand"
 	"reflect"
+	"testing"
 )
 
 type TestStruct struct {
-	id int
+	id         int
 	importance float32
-	name string
+	name       string
 }
 
 // Comparator for multiple keys for values
 func (ts TestStruct) Less(index string, than interface{}) bool {
-	switch(index) {
-		case "id":
-			return ts.id < than.(TestStruct).id
-		case "importance":
-			return ts.importance < than.(TestStruct).importance
-		default:
-			return true
+	switch index {
+	case "id":
+		return ts.id < than.(TestStruct).id
+	case "importance":
+		return ts.importance < than.(TestStruct).importance
+	case "name":
+		return ts.name < than.(TestStruct).name
+	default:
+		return true
 	}
 }
 
@@ -54,8 +56,8 @@ func shuffeledTestData() (data []TestStruct) {
 	data = testData()
 
 	for i := range data {
-    	j := rand.Intn(i + 1)
-    	data[i], data[j] = data[j], data[i]
+		j := rand.Intn(i + 1)
+		data[i], data[j] = data[j], data[i]
 	}
 
 	return data
@@ -69,7 +71,7 @@ func TestAddOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -83,7 +85,7 @@ func TestAddMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"importance", "id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -101,7 +103,7 @@ func TestDeleteInvalidIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -114,13 +116,12 @@ func TestDeleteInvalidIndex(t *testing.T) {
 	}
 }
 
-
 // One index, Success
 func TestDeleteOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -128,9 +129,8 @@ func TestDeleteOneIndex(t *testing.T) {
 	var searchedRecord Item = TestStruct{id: 3}
 	result := ms.Delete(searchedRecord, "id").(TestStruct)
 
-
-	if(ms.Len() != len(data)-1 ||
-		result.id != 3 || result.importance != 5) {
+	if ms.Len() != len(data)-1 ||
+		result.id != 3 || result.importance != 5 {
 		t.Error("Deleting with one index failed")
 	}
 }
@@ -140,7 +140,7 @@ func TestDeleteEmptyOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -158,7 +158,7 @@ func TestDeleteMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -166,8 +166,8 @@ func TestDeleteMultipleIndex(t *testing.T) {
 	var searchedRecord Item = TestStruct{importance: 5}
 	result := ms.Delete(searchedRecord, "importance").(TestStruct)
 
-	if(ms.Len() != len(data)-1 ||
-		result.id != 3 || result.importance != 5) {
+	if ms.Len() != len(data)-1 ||
+		result.id != 3 || result.importance != 5 {
 		t.Error("Deleting with multiple index failed")
 	}
 }
@@ -177,7 +177,7 @@ func TestDeleteEmptyMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -190,7 +190,6 @@ func TestDeleteEmptyMultipleIndex(t *testing.T) {
 	}
 }
 
-
 /*
 	Get
 */
@@ -199,7 +198,7 @@ func TestGetInvalidIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -217,7 +216,7 @@ func TestGetOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -236,7 +235,7 @@ func TestGetEmptyOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -255,7 +254,7 @@ func TestGetMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -273,7 +272,7 @@ func TestGetEmptyMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -286,7 +285,6 @@ func TestGetEmptyMultipleIndex(t *testing.T) {
 	}
 }
 
-
 /*
 	GetRange
 */
@@ -295,7 +293,7 @@ func TestGetRangeInvalidIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -318,7 +316,7 @@ func TestRangeOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -343,7 +341,7 @@ func TestRangeEmptyOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -366,7 +364,7 @@ func TestRangeMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -391,7 +389,7 @@ func TestRangeEmptyMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -418,7 +416,7 @@ func TestMaxInvalidIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -434,7 +432,7 @@ func TestMaxOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -462,7 +460,7 @@ func TestMaxMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -494,7 +492,7 @@ func TestMinInvalidIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -510,7 +508,7 @@ func TestMinOneIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -538,7 +536,7 @@ func TestMinMultipleIndex(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -562,7 +560,6 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 	}
 }
 
-
 /*
 	Update Data
 */
@@ -570,7 +567,7 @@ func TestMinEmptyMultipleIndex(t *testing.T) {
 func dataModifierFunc(i Item) (Item, bool) {
 	itemCopy := i.(TestStruct)
 
-	if(itemCopy.name == "x" || itemCopy.name == "z") {
+	if itemCopy.name == "x" || itemCopy.name == "z" {
 		itemCopy.name = "changed"
 		return itemCopy, true
 	} else {
@@ -582,7 +579,7 @@ func TestUpdateData(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -623,7 +620,6 @@ func TestUpdateData(t *testing.T) {
 	}
 }
 
-
 /*
 	Update Data that can include index change
 */
@@ -646,7 +642,7 @@ func TestUpdateWithIndexes(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -709,7 +705,7 @@ func TestUpdateWithIndexes(t *testing.T) {
 func dataSubsetModifierFunc(i Item) (Item, bool) {
 	itemCopy := i.(TestStruct)
 
-	if(itemCopy.name == "x" || itemCopy.name == "y" || itemCopy.name == "z") {
+	if itemCopy.name == "x" || itemCopy.name == "y" || itemCopy.name == "z" {
 		itemCopy.name = "changed"
 		return itemCopy, true
 	} else {
@@ -721,7 +717,7 @@ func TestUpdateDataSubset(t *testing.T) {
 	data := shuffeledTestData()
 
 	ms := New([]string{"id", "importance"})
-	for _,v := range data {
+	for _, v := range data {
 		var vItem Item = v
 		ms.Add(vItem)
 	}
@@ -752,7 +748,7 @@ func TestUpdateDataSubset(t *testing.T) {
 	nonApplicableRecord := []Item{TestStruct{id: 9}}
 	nonApplicableResult := ms.UpdateDataSubset(nonApplicableRecord, "id", dataSubsetModifierFunc)
 
-	if !reflect.DeepEqual(nonApplicableResult, []Item{nil}){
+	if !reflect.DeepEqual(nonApplicableResult, []Item{nil}) {
 		t.Error("Update subset didn't fail but function doesn't update record")
 		return
 	}
@@ -763,5 +759,109 @@ func TestUpdateDataSubset(t *testing.T) {
 	if !reflect.DeepEqual(inexistentRecordResult, []Item{nil}) {
 		t.Errorf("Update subset didn't fail but record is not in store")
 		return
+	}
+}
+
+/*
+	Benchmarks
+*/
+type BenchStruct struct {
+	id0 int
+	id1 int
+	id2 int
+	id3 int
+	id4 int
+	id5 int
+	id6 int
+}
+
+func (ts BenchStruct) Less(index string, than interface{}) bool {
+	switch index {
+	case "id0":
+		return ts.id0 < than.(BenchStruct).id0
+	case "id1":
+		return ts.id1 < than.(BenchStruct).id1
+	case "id2":
+		return ts.id2 < than.(BenchStruct).id2
+	case "id3":
+		return ts.id3 < than.(BenchStruct).id3
+	case "id4":
+		return ts.id4 < than.(BenchStruct).id4
+	case "id5":
+		return ts.id5 < than.(BenchStruct).id5
+	case "id6":
+		return ts.id6 < than.(BenchStruct).id6
+	default:
+		return true
+	}
+}
+
+func makeRandBenchStruct() *BenchStruct {
+	return &BenchStruct{
+		id0: rand.Intn(100000),
+		id1: rand.Intn(100000),
+		id2: rand.Intn(100000),
+		id3: rand.Intn(100000),
+		id4: rand.Intn(100000),
+		id5: rand.Intn(100000),
+		id6: rand.Intn(100000),
+	}
+}
+
+func BenchmarkOneIndexInsert(b *testing.B) {
+	ms := New([]string{"id0"})
+
+	for n := 0; n < b.N; n++ {
+		record := makeRandBenchStruct()
+		ms.Add(*record)
+	}
+}
+
+func BenchmarkSevenIndexInsert(b *testing.B) {
+	ms := New([]string{"id0", "id1", "id2", "id3", "id4", "id5", "id6"})
+
+	for n := 0; n < b.N; n++ {
+		record := makeRandBenchStruct()
+		ms.Add(*record)
+	}
+}
+
+func BenchmarkOneIndexFind(b *testing.B) {
+	ms := New([]string{"id0"})
+
+	record := makeRandBenchStruct()
+	for n := 0; n < 100000; n++ {
+		ms.Add(*record)
+		record = makeRandBenchStruct()
+	}
+
+	b.ResetTimer()
+
+	var res Item
+	for n := 0; n < b.N; n++ {
+		res = ms.Get(*record, "id0")
+		*record = res.(BenchStruct)
+	}
+}
+
+func BenchmarkSevenIndexFind(b *testing.B) {
+	ms := New([]string{"id0", "id1", "id2", "id3", "id4", "id5", "id6"})
+
+	record := makeRandBenchStruct()
+	var lastNonUnique Item
+	for n := 0; n < 100000; n++ {
+		res := ms.Add(*record)
+		if res != nil {
+			lastNonUnique = res
+		}
+		record = makeRandBenchStruct()
+	}
+
+	b.ResetTimer()
+
+	var res Item
+	for n := 0; n < b.N; n++ {
+		res = ms.Get(*record, "id0")
+		*record = res.(BenchStruct)
 	}
 }

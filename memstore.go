@@ -11,7 +11,7 @@ import (
 	Includes comparator for every index
 */
 type Item interface {
-    Less(index string, than interface{}) bool
+	Less(index string, than interface{}) bool
 }
 
 type internalItem struct {
@@ -31,11 +31,11 @@ func (ii *internalItem) Less(index string, than llrb.Item) bool {
 */
 type Memstore struct {
 	// Slice of trees for each index
-	trees 	[]*llrb.LLRB
+	trees []*llrb.LLRB
 
 	// Map of indexes we're supporting
 	indexTree map[string]*llrb.LLRB
 
 	// RW lock
-	m		sync.RWMutex
+	m sync.RWMutex
 }

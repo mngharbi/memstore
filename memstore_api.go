@@ -4,9 +4,8 @@ import (
 	"github.com/mngharbi/GoLLRB/llrb"
 )
 
-
 // Make internal item (to work with llrb) from external item
-func makeInternalItem(item Item) llrb.Item  {
+func makeInternalItem(item Item) llrb.Item {
 	itemCopy := item
 	return &internalItem{
 		item: &itemCopy,
@@ -14,7 +13,7 @@ func makeInternalItem(item Item) llrb.Item  {
 }
 
 // Delete item from a certain tree
-func (ms *Memstore) delete (x *internalItem, tree *llrb.LLRB) *internalItem {
+func (ms *Memstore) delete(x *internalItem, tree *llrb.LLRB) *internalItem {
 	deleted := tree.Delete(x)
 	if deleted == nil {
 		return nil
@@ -41,7 +40,7 @@ func New(indexes []string) *Memstore {
 	return ms
 }
 
-func (ms *Memstore) Add (x Item) {
+func (ms *Memstore) Add(x Item) {
 	// Make internal node to use in llrb
 	ix := makeInternalItem(x)
 
@@ -55,7 +54,7 @@ func (ms *Memstore) Add (x Item) {
 	ms.m.Unlock()
 }
 
-func (ms *Memstore) Delete (x Item, index string) Item {
+func (ms *Memstore) Delete(x Item, index string) Item {
 	// Make internal node to use in llrb
 	ix := makeInternalItem(x)
 
@@ -114,8 +113,7 @@ func (ms *Memstore) Get(x Item, index string) (res Item) {
 	return res
 }
 
-
-func (ms *Memstore) GetRange (from, to Item, index string, test (func(Item) bool)) {
+func (ms *Memstore) GetRange(from, to Item, index string, test func(Item) bool) {
 	// Make internal nodes to use with llrb
 	ifrom := makeInternalItem(from)
 	ito := makeInternalItem(to)
@@ -197,7 +195,7 @@ func (ms *Memstore) Min(index string) (res Item) {
 	return res
 }
 
-func (ms *Memstore) UpdateData(x Item, index string, modify (func(Item) (Item, bool)) ) (res Item) {
+func (ms *Memstore) UpdateData(x Item, index string, modify func(Item) (Item, bool)) (res Item) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
 
@@ -233,7 +231,7 @@ func (ms *Memstore) UpdateData(x Item, index string, modify (func(Item) (Item, b
 	return res
 }
 
-func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (Item, bool)) ) (res Item) {
+func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify func(Item) (Item, bool)) (res Item) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
 
@@ -281,11 +279,10 @@ func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify (func(Item) (
 	}
 }
 
-
-func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify (func(Item) (Item, bool)) ) (res []Item) {
+func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify func(Item) (Item, bool)) (res []Item) {
 	// Make internal nodes to use with llrb
 	internalItems := []llrb.Item{}
-	for _,it := range items {
+	for _, it := range items {
 		internalItems = append(internalItems, makeInternalItem(it))
 	}
 
@@ -297,7 +294,7 @@ func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify (func(It
 
 	ms.m.RLock()
 
-	for _,iitem := range internalItems {
+	for _, iitem := range internalItems {
 		internalFoundInterfaced := tree.Get(iitem)
 		if internalFoundInterfaced == nil {
 			res = append(res, nil)
