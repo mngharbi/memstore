@@ -848,12 +848,8 @@ func BenchmarkSevenIndexFind(b *testing.B) {
 	ms := New([]string{"id0", "id1", "id2", "id3", "id4", "id5", "id6"})
 
 	record := makeRandBenchStruct()
-	var lastNonUnique Item
 	for n := 0; n < 100000; n++ {
-		res := ms.Add(*record)
-		if res != nil {
-			lastNonUnique = res
-		}
+		ms.Add(*record)
 		record = makeRandBenchStruct()
 	}
 
