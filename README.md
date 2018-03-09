@@ -1,4 +1,4 @@
-# Memstore  ![Travis CI Build Status](https://api.travis-ci.org/mngharbi/memstore.svg?branch=master) [![Coverage](http://gocover.io/_badge/github.com/mngharbi/memstore)](http://gocover.io/github.com/mngharbi/memstore) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/mngharbi/memstore/master/LICENSE)
+# Memstore  ![Travis CI Build Status](https://api.travis-ci.org/mngharbi/memstore.svg?branch=master) [![Coverage](https://codecov.io/gh/mngharbi/memstore/branch/master/graph/badge.svg)](https://codecov.io/gh/mngharbi/memstore) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/mngharbi/memstore/master/LICENSE)
 
 Memstore is an in-memory, thread safe, multiple-key datastore for Go.
 
