@@ -118,7 +118,7 @@ func TestAddOrGetOneIndex(t *testing.T) {
 
 	if ms.Len() != len(data) ||
 		!reflect.DeepEqual(firstItemPristine, resultItem.(TestStruct)) {
-		t.Error("AddOrGetting with one index failed. expected=%+v found=%+v", firstItemPristine, resultItem.(TestStruct))
+		t.Errorf("AddOrGetting with one index failed. expected=%+v found=%+v", firstItemPristine, resultItem.(TestStruct))
 	}
 }
 
