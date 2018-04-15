@@ -96,6 +96,33 @@ func TestAddMultipleIndex(t *testing.T) {
 }
 
 /*
+	Add or Get
+*/
+
+func TestAddOrGetOneIndex(t *testing.T) {
+	data := shuffeledTestData()
+
+	// AddOrGet all unique test data
+	ms := New([]string{"id"})
+	for _, v := range data {
+		var vItem Item = v
+		ms.AddOrGet(vItem)
+	}
+
+	// AddOrGet modified first record
+	firstItemPristine := data[0]
+	firstItem := data[0]
+	firstItem.importance += 1
+	var vItem Item = firstItem
+	resultItem := ms.AddOrGet(vItem)
+
+	if ms.Len() != len(data) ||
+		!reflect.DeepEqual(firstItemPristine, resultItem.(TestStruct)) {
+		t.Error("AddOrGetting with one index failed. expected=%+v found=%+v", firstItemPristine, resultItem.(TestStruct))
+	}
+}
+
+/*
 	Delete
 */
 

@@ -54,6 +54,42 @@ func (ms *Memstore) Add(x Item) {
 	ms.m.Unlock()
 }
 
+func (ms *Memstore) AddOrGet(x Item) Item {
+	// Make internal node to use in llrb
+	ix := makeInternalItem(x)
+
+	var res *Item
+
+	// Get first tree for search
+	tree := ms.trees[0]
+
+	ms.m.Lock()
+
+	// Search for item in the first tree
+	ifound := tree.Get(ix)
+	if ifound == nil {
+		res = nil
+	} else {
+		res = ifound.(*internalItem).item
+	}
+
+	// Add to internal trees only if not found
+	if res == nil {
+		res = ix.(*internalItem).item
+		for _, tree := range ms.indexTree {
+			tree.ReplaceOrInsert(ix)
+		}
+	}
+
+	ms.m.Unlock()
+
+	if res == nil {
+		return nil
+	} else {
+		return *res
+	}
+}
+
 func (ms *Memstore) Delete(x Item, index string) Item {
 	// Make internal node to use in llrb
 	ix := makeInternalItem(x)
