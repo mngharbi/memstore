@@ -28,12 +28,12 @@ func (ts TestStruct) Less(index string, than interface{}) bool {
 
 func testData() []TestStruct {
 	return []TestStruct{
-		TestStruct{1, 3, "x"},
-		TestStruct{2, 2, "y"},
-		TestStruct{3, 5, "z"},
-		TestStruct{4, 0, "t"},
-		TestStruct{8, 3.2, "u"},
-		TestStruct{9, 3.1, "v"},
+		{1, 3, "x"},
+		{2, 2, "y"},
+		{3, 5, "z"},
+		{4, 0, "t"},
+		{8, 3.2, "u"},
+		{9, 3.1, "v"},
 	}
 }
 
@@ -43,12 +43,12 @@ func idSortedData() []TestStruct {
 
 func importanceSortedData() []TestStruct {
 	return []TestStruct{
-		TestStruct{4, 0, "t"},
-		TestStruct{2, 2, "y"},
-		TestStruct{1, 3, "x"},
-		TestStruct{9, 3.1, "v"},
-		TestStruct{8, 3.2, "u"},
-		TestStruct{3, 5, "z"},
+		{4, 0, "t"},
+		{2, 2, "y"},
+		{1, 3, "x"},
+		{9, 3.1, "v"},
+		{8, 3.2, "u"},
+		{3, 5, "z"},
 	}
 }
 
@@ -643,6 +643,47 @@ func TestUpdateData(t *testing.T) {
 
 	if inexistentRecordResult != nil {
 		t.Error("Update didn't fail but record is not in store")
+		return
+	}
+}
+
+/*
+	Apply Data
+*/
+
+func dataApplierFunc(i Item) bool {
+	itemCopy := i.(TestStruct)
+	return itemCopy.importance == 3
+}
+
+func TestApplyData(t *testing.T) {
+	data := shuffeledTestData()
+
+	ms := New([]string{"id", "importance"})
+	for _, v := range data {
+		var vItem Item = v
+		ms.Add(vItem)
+	}
+
+	var searchedRecord Item = TestStruct{id: 1}
+	result := ms.ApplyData(searchedRecord, "id", dataApplierFunc)
+
+	if result == nil {
+		t.Error("Apply failed when it should succeed")
+		return
+	}
+
+	var nonApplicableRecord Item = TestStruct{id: 9}
+	nonApplicableResult := ms.ApplyData(nonApplicableRecord, "id", dataApplierFunc)
+	if nonApplicableResult != nil {
+		t.Error("Apply should return nil if user function returned false")
+		return
+	}
+
+	var inexistentRecord Item = TestStruct{id: 100}
+	inexistentRecordResult := ms.ApplyData(inexistentRecord, "id", dataApplierFunc)
+	if inexistentRecordResult != nil {
+		t.Error("Apply should return nil if record is not in store")
 		return
 	}
 }

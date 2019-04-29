@@ -255,6 +255,40 @@ func (ms *Memstore) UpdateData(x Item, index string, modify func(Item) (Item, bo
 	return res
 }
 
+func (ms *Memstore) ApplyData(x Item, index string, run func(Item) bool) (res Item) {
+	// Make internal node to use with llrb
+	ix := makeInternalItem(x)
+
+	// Get corresponding tree
+	tree := ms.indexTree[index]
+	if tree == nil {
+		return nil
+	}
+
+	ms.m.RLock()
+	defer func() { ms.m.RUnlock() }()
+
+	internalFoundInterfaced := tree.Get(ix)
+	if internalFoundInterfaced == nil {
+		res = nil
+	} else {
+		// Calculate result with modify
+		var itemFoundCopy Item
+		internalFound := internalFoundInterfaced.(*internalItem)
+		itemFoundCopy = *(internalFound.item)
+		runResult := run(itemFoundCopy)
+
+		// If result is successful, return item
+		if runResult {
+			res = itemFoundCopy
+		} else {
+			res = nil
+		}
+	}
+
+	return res
+}
+
 func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify func(Item) (Item, bool)) (res Item) {
 	// Make internal node to use with llrb
 	ix := makeInternalItem(x)
