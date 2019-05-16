@@ -337,7 +337,7 @@ func (ms *Memstore) UpdateWithIndexes(x Item, index string, modify func(Item) (I
 	}
 }
 
-func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify func(Item) (Item, bool)) (res []Item) {
+func (ms *Memstore) ApplyDataSubset(items []Item, index string, apply func(Item) bool) (res []Item) {
 	// Make internal nodes to use with llrb
 	internalItems := []llrb.Item{}
 	for _, it := range items {
@@ -357,16 +357,15 @@ func (ms *Memstore) UpdateDataSubset(items []Item, index string, modify func(Ite
 		if internalFoundInterfaced == nil {
 			res = append(res, nil)
 		} else {
-			// Calculate result with modify
+			// Run apply on item
 			var itemFoundCopy Item
 			internalFound := internalFoundInterfaced.(*internalItem)
 			itemFoundCopy = *(internalFound.item)
-			itemResult, modifyResult := modify(itemFoundCopy)
+			applyResult := apply(itemFoundCopy)
 
 			// If update is successful, update internal item
-			if modifyResult {
-				*(internalFound.item) = itemResult
-				res = append(res, itemResult)
+			if applyResult {
+				res = append(res, itemFoundCopy)
 			} else {
 				res = append(res, nil)
 			}
